@@ -19,15 +19,9 @@ namespace Infrastructure.Repositories
         {
             this.context=context;
         }
-       
-        public async Task<EmployeeTax> CalculateEmployeeTax(EmployeeTax CalcEmployeeTax)
-        {
-            var res = await context.EmployeeTaxes.AddAsync(CalcEmployeeTax);
-            await context.SaveChangesAsync();
-            return res.Entity;
-        }
         public async Task<Employee> CreateEmployee(Employee newemployee)
         {
+
             var res = await context.Employees.AddAsync(newemployee);
             await context.SaveChangesAsync();
             return res.Entity;
@@ -48,7 +42,13 @@ namespace Infrastructure.Repositories
 
         public async Task<IEnumerable> GetAllEmployees()
         {
-            var res = await context.Employees.ToListAsync();
+            var res = await context.Employees.Include(a=>a.Education).ToListAsync();
+            return res;
+        }
+
+        public async Task<IEnumerable> GetEducationDropDown()
+        {
+            var res = await context.Educations.ToListAsync();
             return res;
         }
 
@@ -58,28 +58,46 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Id == EmployeeID);         
             return res;
         }     
-        public async Task<EmployeeTax> UpdateCalculateEmployeeTax(EmployeeTax CalcEmployeeTax)
-        {
-            var res = await context.EmployeeTaxes.FirstOrDefaultAsync(x => x.EmployeeId == CalcEmployeeTax.EmployeeId);
-            if (res != null)
-            {
-                res.NetSalary = CalcEmployeeTax.NetSalary;
-                await context.SaveChangesAsync();
-                return res;
-            }
-            return null;
-        }
         public async Task<Employee> UpdateEmployee(EmployeeViewModel employee)
         {
             var res = await context.Employees.FirstOrDefaultAsync(x => x.Id == employee.Id);
-            if (res != null)
+            var file = employee.ImageFile;
+            if (file != null)
+            {
+                if (file.Length > 0)
+                {
+                    using (var stream = file.OpenReadStream())
+                    {
+
+                        res.Name = employee.Name;
+                        res.Email = employee.Email;
+                        res.Mobile = employee.Mobile;
+                        res.EducationId = employee.EducationId;
+                        res.FileName = file.FileName;
+                        res.ContentType = file.ContentType;
+                        
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await stream.CopyToAsync(memoryStream);
+                            res.Data = memoryStream.ToArray();
+                        }
+                        context.Employees.Update(res);
+                        context.SaveChanges();
+                    }
+
+                }
+            }
+            else
             {
                 res.Name = employee.Name;
-                res.Salary = employee.Salary;
-                res.Mobile = employee.Mobile;
                 res.Email = employee.Email;
-                await context.SaveChangesAsync();
-                return res;
+                res.Mobile = employee.Mobile;
+                res.EducationId = employee.EducationId;
+               
+
+               
+                context.Employees.Update(res);
+                context.SaveChanges();
             }
             return null;
         } 

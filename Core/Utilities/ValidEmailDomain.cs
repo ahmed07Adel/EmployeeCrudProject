@@ -16,7 +16,7 @@ namespace Core.Utilities
         }
         public override bool IsValid(object Value)
         {
-            string[] strings = Value.ToString().Split('@');
+            string[] strings = Value.ToString().Split('.');
             return strings[1].ToUpper() == AllowDomain.ToUpper();
 
         }

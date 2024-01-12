@@ -16,6 +16,7 @@ namespace Core.Interfaces
         Task<Employee> GetEmployeeByID(int EmployeeID);
         Task<Employee> UpdateEmployee(EmployeeViewModel employee);
         Task<Employee> DeleteEmployee(int EmployeeID);
+        Task<IEnumerable> GetEducationDropDown();
 
     }
 }

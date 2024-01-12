@@ -1,4 +1,5 @@
 ﻿using Core.Utilities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,11 +14,11 @@ namespace Core.ViewModel
         public int Id { get; set; }
         public string Name { get; set; }
         public int Mobile { get; set; }
+        public int? EducationId { get; set; }
         [Required]
         [EmailAddress]
-        [ValidEmailDomain(AllowDomain: "Gmail.com", ErrorMessage = "Email Must Be Gmail.com")]
+        [ValidEmailDomain(AllowDomain: "com", ErrorMessage = "Invalid Email, Add .com")]
         public string Email { get; set; }
-        public float Salary { get; set; }
-        public float  NetSalary { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 }

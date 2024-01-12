@@ -14,15 +14,24 @@ namespace Infrastructure.Data
         {
         }
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<EmployeeTax> EmployeeTaxes { get; set; }
+        public DbSet<Education> Educations { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-    
-            modelBuilder.Entity<Employee>().HasData(
-                new Employee { Id=1, Email = "Ahmed@Gmail.Com", Mobile=012334, Name="Ahmed", Salary=2000 },
-                new Employee { Id=2, Email = "Ali@Gmail.Com", Mobile=3435454, Name="ali", Salary=3000 }
+            modelBuilder.Entity<Employee>()
+    .HasOne(x => x.Education);
+            ;
+            modelBuilder.Entity<User>(entity => { entity.HasIndex(e => e.Email).IsUnique(); });
+            modelBuilder.Entity<Education>().HasData(
+                new Education { Id=1, Name = "Grad" },
+                new Education { Id=2, Name = "Undergrad" }
                 );
+            modelBuilder.Entity<Role>().HasData(
+               new Role { Id=1, Name = "Admin" },
+               new Role { Id=2, Name = "NormalUser" }
+               );
         }
     }
 }

@@ -28,6 +28,19 @@ namespace A1SoftechAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data");
             }
         }
+        [HttpGet("GetEducationDropDown")]
+        public async Task<IActionResult> GetEducationDropDown()
+        {
+            try
+            {
+                return Ok(await repository.GetEducationDropDown());
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Error retrieving data");
+            }
+        }
         [HttpGet("GetEmployeeById/{id:int}")]
         public async Task<ActionResult<Employee>> GetEmployeeById(int id)
         {
@@ -48,7 +61,7 @@ namespace A1SoftechAPI.Controllers
             }
         }
         [HttpPost("CreateEmployee")]
-        public async Task<ActionResult<Employee>> CreateEmployee(EmployeeViewModel model)
+        public async Task<ActionResult<Employee>> CreateEmployee([FromForm]EmployeeViewModel model)
         {
             try
             {
@@ -56,31 +69,62 @@ namespace A1SoftechAPI.Controllers
                 {
                     return BadRequest();
                 }
-                var entity = new Employee
+                var file = model.ImageFile;
+                if (file != null)
                 {
-                    Name = model.Name,
-                    Salary = model.Salary,
-                    Email = model.Email,
-                    Mobile = model.Mobile,
-                };
-               
-                var res = await repository.CreateEmployee(entity);               
-                return Ok(res); 
+                    if (file.Length > 0)
+                    {
+                        using (var stream = file.OpenReadStream())
+                        {
+                            var entity = new Employee
+                            {
+                                Name = model.Name,
+                                Email = model.Email,
+                                Mobile = model.Mobile,
+                                EducationId = model.EducationId,
+                                FileName = file.FileName,
+                                ContentType = file.ContentType
+                            };
+                            using (var memoryStream = new MemoryStream())
+                            {
+                                await stream.CopyToAsync(memoryStream);
+                                entity.Data = memoryStream.ToArray();
+                            }
+                            var res = await repository.CreateEmployee(entity);
+
+                        }
+
+                    }
+                }
+                else
+                {
+                    var entity = new Employee
+                    {
+                        Name = model.Name,
+                        Email = model.Email,
+                        Mobile = model.Mobile,
+                        EducationId = model.EducationId,
+
+                    };
+                    var res = await repository.CreateEmployee(entity);
+                }
+                return Ok();
+
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error Create data");
             }
         }
-        [HttpPost("UpdateEmployee/{id:int}")]
-        public async Task<ActionResult<Employee>> UpdateEmployee([FromBody] EmployeeViewModel employeeModel)
+        [HttpPost("UpdateEmployee")]
+        public async Task<ActionResult<Employee>> UpdateEmployee([FromForm] EmployeeViewModel employeeModel)
         {
             try
             {
                 var Prod = await repository.GetEmployeeByID(employeeModel.Id);
                 if (Prod == null)
                 {
-                    return NotFound($"this product = {employeeModel.Id} Can not found");
+                    return NotFound($"this Employee = {employeeModel.Id} Can not found");
                 }
                 var res= await repository.UpdateEmployee(employeeModel);
                 return Ok(res);
@@ -102,6 +146,7 @@ namespace A1SoftechAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error deleting data");
             }
         }
+
        
         
     }
